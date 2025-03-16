@@ -1,0 +1,33 @@
+﻿API Call for test data:
+// Request: ""https://ll.thespacedevs.com/2.3.0/launches/upcoming/?format=json&ordering=net&mode=list&net__gte=2025-03-17T00:00:00Z&net__lte=2025-03-23T23:59:59Z"
+
+TestData:
+	- response_empty: Valid json with no launches scheduled
+
+	- response.json: Containing full response from the API
+
+	- response1_update.json: Same as response.json but with two modified launch objects:
+		update1:
+			* id: ff04cc6f-981d-4b55-8368-3b8a59c1120e
+			* rocketName: Falcon 9 Block 5 | Starlink Group 12-25
+			* last_updated: 2025-03-13T17:32:58Z --> 2025-03-15T14:19:58Z
+			* net:			2025-03-18T18:09:00Z --> 2025-03-18T19:30:00Z
+			* window_end:	2025-03-18T22:40:00Z --> 2025-03-18T23:50:00Z
+			* window_start: 2025-03-18T18:09:00Z --> 2025-03-18T19:30:00Z
+		update2:
+			* id: 558c07d5-625d-4b83-b7a0-91d3de5797ae
+			* rocketName: Ceres-1 | Unknown Payload
+			* last_updated: 2025-03-13T13:23:31Z --> 2025-03-16T08:22:33Z
+			* net:			2025-03-21T11:10:00Z --> 2025-03-22T16:15:00Z
+			* window_end:	2025-03-21T11:47:00Z --> 2025-03-22T20:15:00Z
+			* window_start: 2025-03-21T11:00:00Z --> 2025-03-22T16:15:00Z
+
+	- reponse1_removed.json: Same as response.json but with removed one launch object:
+		- removed:
+			* id: ad025362-828f-448c-855d-bfe53e04cdeb
+			* name: Electron | High Five (KinÃ©is 21-25)
+
+	- response_newLaunch.json: Same as response1.json but with added new launch object:
+		- added:
+			* id: e652a538-6d40-4b55-97a6-7c757ec4e1e9
+			* name: Spectrum | Maiden Flight

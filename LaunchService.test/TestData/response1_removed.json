@@ -1,0 +1,207 @@
+﻿{
+    "count": 6,
+    "next": null,
+    "previous": null,
+    "results": [
+        {
+            "id": "b9fac3ef-050f-4e6d-9688-f493dbe07815",
+            "url": "https://ll.thespacedevs.com/2.3.0/launches/b9fac3ef-050f-4e6d-9688-f493dbe07815/?format=json",
+            "name": "Ceres-1 | Unknown Payload",
+            "response_mode": "list",
+            "slug": "ceres-1-unknown-payload",
+            "launch_designator": null,
+            "status": {
+                "id": 1,
+                "name": "Go for Launch",
+                "abbrev": "Go",
+                "description": "Current T-0 confirmed by official or reliable sources."
+            },
+            "last_updated": "2025-03-13T13:21:52Z",
+            "net": "2025-03-17T08:10:00Z",
+            "net_precision": {
+                "id": 2,
+                "name": "Hour",
+                "abbrev": "HR",
+                "description": "The T-0 is accurate to the hour."
+            },
+            "window_end": "2025-03-17T08:46:00Z",
+            "window_start": "2025-03-17T07:59:00Z",
+            "image": {
+                "id": 1708,
+                "name": "[AUTO] Ceres-1 - image",
+                "image_url": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/ceres-1_image_20230722081939.jpeg",
+                "thumbnail_url": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/255bauto255d__image_thumbnail_20240305193541.jpeg",
+                "credit": null,
+                "license": {
+                    "id": 1,
+                    "name": "Unknown",
+                    "priority": 9,
+                    "link": null
+                },
+                "single_use": true,
+                "variants": []
+            },
+            "infographic": null
+        },
+        {
+            "id": "ff04cc6f-981d-4b55-8368-3b8a59c1120e",
+            "url": "https://ll.thespacedevs.com/2.3.0/launches/ff04cc6f-981d-4b55-8368-3b8a59c1120e/?format=json",
+            "name": "Falcon 9 Block 5 | Starlink Group 12-25",
+            "response_mode": "list",
+            "slug": "falcon-9-block-5-starlink-group-12-25",
+            "launch_designator": null,
+            "status": {
+                "id": 8,
+                "name": "To Be Confirmed",
+                "abbrev": "TBC",
+                "description": "Awaiting official confirmation - current date is known with some certainty."
+            },
+            "last_updated": "2025-03-13T17:32:58Z",
+            "net": "2025-03-18T18:09:00Z",
+            "net_precision": {
+                "id": 2,
+                "name": "Hour",
+                "abbrev": "HR",
+                "description": "The T-0 is accurate to the hour."
+            },
+            "window_end": "2025-03-18T22:40:00Z",
+            "window_start": "2025-03-18T18:09:00Z",
+            "image": {
+                "id": 1296,
+                "name": "Starlink night fairing",
+                "image_url": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/falcon2520925_image_20221009234147.png",
+                "thumbnail_url": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/255bauto255d__image_thumbnail_20240305192320.png",
+                "credit": "SpaceX",
+                "license": {
+                    "id": 5,
+                    "name": "CC BY-NC 2.0",
+                    "priority": 1,
+                    "link": "https://creativecommons.org/licenses/by-nc/2.0/"
+                },
+                "single_use": false,
+                "variants": []
+            },
+            "infographic": null
+        },
+        {
+            "id": "171bf3b5-9b1c-4bd8-b64c-111257d06131",
+            "url": "https://ll.thespacedevs.com/2.3.0/launches/171bf3b5-9b1c-4bd8-b64c-111257d06131/?format=json",
+            "name": "Falcon 9 Block 5 | NROL-57",
+            "response_mode": "list",
+            "slug": "falcon-9-block-5-nrol-57",
+            "launch_designator": null,
+            "status": {
+                "id": 8,
+                "name": "To Be Confirmed",
+                "abbrev": "TBC",
+                "description": "Awaiting official confirmation - current date is known with some certainty."
+            },
+            "last_updated": "2025-03-13T17:35:06Z",
+            "net": "2025-03-20T06:02:00Z",
+            "net_precision": {
+                "id": 2,
+                "name": "Hour",
+                "abbrev": "HR",
+                "description": "The T-0 is accurate to the hour."
+            },
+            "window_end": "2025-03-20T08:31:00Z",
+            "window_start": "2025-03-20T06:02:00Z",
+            "image": {
+                "id": 2264,
+                "name": "Falcon 9 on SLC-4E (NROL-167)",
+                "image_url": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/falcon_9_on_slc_image_20241024165956.jpg",
+                "thumbnail_url": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/falcon_9_on_slc_image_thumbnail_20241024165957.jpeg",
+                "credit": "SpaceX",
+                "license": {
+                    "id": 1,
+                    "name": "Unknown",
+                    "priority": 9,
+                    "link": null
+                },
+                "single_use": true,
+                "variants": []
+            },
+            "infographic": null
+        },
+        {
+            "id": "558c07d5-625d-4b83-b7a0-91d3de5797ae",
+            "url": "https://ll.thespacedevs.com/2.3.0/launches/558c07d5-625d-4b83-b7a0-91d3de5797ae/?format=json",
+            "name": "Ceres-1 | Unknown Payload",
+            "response_mode": "list",
+            "slug": "ceres-1-unknown-payload-2",
+            "launch_designator": null,
+            "status": {
+                "id": 1,
+                "name": "Go for Launch",
+                "abbrev": "Go",
+                "description": "Current T-0 confirmed by official or reliable sources."
+            },
+            "last_updated": "2025-03-13T13:23:31Z",
+            "net": "2025-03-21T11:10:00Z",
+            "net_precision": {
+                "id": 2,
+                "name": "Hour",
+                "abbrev": "HR",
+                "description": "The T-0 is accurate to the hour."
+            },
+            "window_end": "2025-03-21T11:47:00Z",
+            "window_start": "2025-03-21T11:00:00Z",
+            "image": {
+                "id": 1708,
+                "name": "[AUTO] Ceres-1 - image",
+                "image_url": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/ceres-1_image_20230722081939.jpeg",
+                "thumbnail_url": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/255bauto255d__image_thumbnail_20240305193541.jpeg",
+                "credit": null,
+                "license": {
+                    "id": 1,
+                    "name": "Unknown",
+                    "priority": 9,
+                    "link": null
+                },
+                "single_use": true,
+                "variants": []
+            },
+            "infographic": null
+        },
+        {
+            "id": "8bfaa532-18e6-4c40-9800-0714b5651f84",
+            "url": "https://ll.thespacedevs.com/2.3.0/launches/8bfaa532-18e6-4c40-9800-0714b5651f84/?format=json",
+            "name": "Falcon 9 Block 5 | Starlink Group 11-7",
+            "response_mode": "list",
+            "slug": "falcon-9-block-5-starlink-group-11-7",
+            "launch_designator": null,
+            "status": {
+                "id": 8,
+                "name": "To Be Confirmed",
+                "abbrev": "TBC",
+                "description": "Awaiting official confirmation - current date is known with some certainty."
+            },
+            "last_updated": "2025-03-11T13:48:39Z",
+            "net": "2025-03-22T20:45:00Z",
+            "net_precision": {
+                "id": 2,
+                "name": "Hour",
+                "abbrev": "HR",
+                "description": "The T-0 is accurate to the hour."
+            },
+            "window_end": "2025-03-23T01:16:00Z",
+            "window_start": "2025-03-22T20:45:00Z",
+            "image": {
+                "id": 1296,
+                "name": "Starlink night fairing",
+                "image_url": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/falcon2520925_image_20221009234147.png",
+                "thumbnail_url": "https://thespacedevs-prod.nyc3.digitaloceanspaces.com/media/images/255bauto255d__image_thumbnail_20240305192320.png",
+                "credit": "SpaceX",
+                "license": {
+                    "id": 5,
+                    "name": "CC BY-NC 2.0",
+                    "priority": 1,
+                    "link": "https://creativecommons.org/licenses/by-nc/2.0/"
+                },
+                "single_use": false,
+                "variants": []
+            },
+            "infographic": null
+        }
+    ]
+}
