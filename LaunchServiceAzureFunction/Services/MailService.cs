@@ -3,6 +3,8 @@ using System.Net.Mail;
 using System.Net;
 using System.Text;
 using LaunchService.Model;
+using System.Configuration;
+using Microsoft.Extensions.Configuration;
 
 namespace LaunchService.Services
 {
@@ -14,6 +16,7 @@ namespace LaunchService.Services
 
     public class MailService : IMailservice
     {
+        public string ConfigurationMailFile { get; } = "emails.json";
         private readonly string _smtpServer;
         private readonly int _smtpPort;
         private readonly string _smtpUser;
@@ -21,12 +24,10 @@ namespace LaunchService.Services
         private readonly string _sender;
         private readonly string _senderEmail;
         private readonly ILogger<MailService> _logger;
-        private readonly IConfiguration _configuration;
+        public List<string> Recipients { get; set; } = new List<string>();
 
-        public MailService(IConfiguration configuration, ILoggerFactory loggerFactory)
+        public MailService(ILoggerFactory loggerFactory)
         {
-
-            _configuration = configuration;
             _smtpServer = "smtp.gmail.com";
             _smtpPort = 587;
             _smtpUser = "vozi002@gmail.com";
@@ -34,6 +35,19 @@ namespace LaunchService.Services
             _senderEmail = "vozi002@gmail.com";
             _sender = string.Empty;
             _logger = loggerFactory.CreateLogger<MailService>();
+            if (!File.Exists(ConfigurationMailFile))
+                throw new FileNotFoundException($"Configuration mail file '{ConfigurationMailFile}' not found.");
+
+            var mailConfig = new ConfigurationBuilder()
+                .SetBasePath(AppContext.BaseDirectory)
+                .AddJsonFile(ConfigurationMailFile, optional: false, reloadOnChange: true)
+                .Build();
+
+            Recipients = mailConfig.GetSection("emails").Get<List<string>>();
+            if (Recipients == null || Recipients.Count == 0)
+            {
+                _logger.LogWarning("No recipients defined in the configuration file!");
+            }
         }
 
         public async Task<bool> SendMailToRecipients(Week week)
@@ -56,14 +70,15 @@ namespace LaunchService.Services
                     };
 
                     // Add recipients
-                    foreach (var recipient in _configuration.Recipients)
+                    foreach (var recipient in Recipients)
                     {
                         mailMessage.To.Add(recipient);
                     }
 
                     await smtpClient.SendMailAsync(mailMessage);
-                    File.WriteAllText(@"C:\_code\geni_naloga\geni\test.html", GenerateHtmlBody(week));
                     _logger.LogInformation($"Email successfully sent!");
+
+                    _logger.LogInformation($"Email should be successfully sent!");
                     return true;
                 }
             }
@@ -92,13 +107,14 @@ namespace LaunchService.Services
                     };
 
                     // Add recipients
-                    foreach (var recipient in _configuration.Recipients)
+                    foreach (var recipient in Recipients)
                     {
                         mailMessage.To.Add(recipient);
                     }
 
                     await smtpClient.SendMailAsync(mailMessage);
                     _logger.LogInformation($"Email successfully sent!");
+
                     return true;
                 }
             }

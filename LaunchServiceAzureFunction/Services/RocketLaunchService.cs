@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using System.Text.Json;
 using System.Web;
+using System.Configuration;
 
 namespace LaunchService.Services
 {
@@ -17,23 +18,20 @@ namespace LaunchService.Services
         private readonly ILogger<RocketLaunchService> _logger;
         private readonly HttpClient _httpClient;
         private readonly ILaunchDbService _db;
-        private readonly IConfiguration _configuration;
         private readonly IMailservice _mailservice;
 
         public RocketLaunchService(
             HttpClient httpClient, 
-            ILaunchDbService db, 
-            IConfiguration configuration, 
+            ILaunchDbService db,
             IMailservice mailservice,
             ILoggerFactory loggerFactory)
         {
             _httpClient = httpClient;
             _db = db;
-            _configuration = configuration;
             _mailservice = mailservice;
             _logger = loggerFactory.CreateLogger<RocketLaunchService>();
 
-            _httpClient.BaseAddress = new Uri(_configuration.ApiBaseUrl);
+            _httpClient.BaseAddress = new Uri(Environment.GetEnvironmentVariable("BaseUrl"));
         }
 
         public async Task<List<Launch>> FetchLaunches(DateTime currentDate)
@@ -56,7 +54,6 @@ namespace LaunchService.Services
 
             _logger.LogInformation($"Success! Status: {response.StatusCode} for request {url}");
             string responseBody = await response.Content.ReadAsStringAsync();
-            //string responseBody = await File.ReadAllTextAsync(@"..\..\..\..\LaunchService.test\TestData\response1.json");
 
             // Deserialize JSON
             using JsonDocument doc = JsonDocument.Parse(responseBody);
@@ -130,7 +127,7 @@ namespace LaunchService.Services
                 // Get all modified launch objects
                 foreach (var launch in launches)
                 {
-                    var storedLaunch = storedLaunches.SingleOrDefault(l => l.RocketId == launch.RocketId);
+                    var storedLaunch = storedLaunches.SingleOrDefault(l => l.RocketId.Equals(launch.RocketId));
                     if (storedLaunch != null && storedLaunch.LastUpdated != launch.LastUpdated)
                     {
                         // Check if removed or status changed
@@ -198,8 +195,8 @@ namespace LaunchService.Services
 
         private Uri createUrl(DateTime start, DateTime end, Dictionary<string, string> queryParams)
         {
-            var uriBuilder = new UriBuilder(_configuration.ApiBaseUrl);
-            uriBuilder.Path = _configuration.ApiLaunchesUrl;
+            var uriBuilder = new UriBuilder(Environment.GetEnvironmentVariable("BaseUrl"));
+            uriBuilder.Path = Environment.GetEnvironmentVariable("LaunchesUrl");
             var query = HttpUtility.ParseQueryString(string.Empty);
 
             foreach (var item in queryParams)

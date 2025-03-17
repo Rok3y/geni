@@ -37,6 +37,10 @@ namespace LaunchService
         public string SmtpServer { get; set; } = string.Empty;
         public List<string> Recipients { get; set; } = new List<string>();
 
+        public string DbProvider { get; set; }
+        public string ConnectionString { get; set; }
+        public string DbFileName { get; set; }
+
         public Configuration(ILoggerFactory logger)
         {
             _logger = logger.CreateLogger<Configuration>();
