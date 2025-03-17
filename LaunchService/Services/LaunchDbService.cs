@@ -88,7 +88,9 @@ namespace LaunchService.Services
 
         public async Task<Week> GetWeek(int weekNumber, int year)
         {
-            return await _dbContext.Weeks.SingleOrDefaultAsync(w => w.WeekNumber == weekNumber && w.Year == year);
+            return await _dbContext.Weeks
+                .Include(w => w.Launches)
+                .SingleOrDefaultAsync(w => w.WeekNumber == weekNumber && w.Year == year);
         }
 
         public async Task<List<Launch>> GetAllLaunchesForWeek(int weekNumber, int year)

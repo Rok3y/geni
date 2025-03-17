@@ -185,12 +185,12 @@ namespace LaunchService.Services
                 sendMailStatus = await _mailservice.SendMailToRecipients(week);
             }
 
-            if (sendMailStatus)
+            if (shouldSendEmail && sendMailStatus)
             {
                 week.Notified = DateTime.Now;
                 await _db.UpdateWeekAsync(week);
             }
-            else
+            else if (shouldSendEmail && !sendMailStatus)
                 _logger.LogWarning("Could not send notification mail!");
 
             return week;

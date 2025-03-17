@@ -57,20 +57,5 @@ namespace LaunchService
 
             Console.ReadLine();
         }
-
-
-        // Maybe a azure function
-        //private static async void GetLaunchesData()
-        //{
-        //    var (startdate, enddate) = Helper.GetNextWeekRange(DateTime.Now);
-
-        //    var responseText = await _rocketLaunchService.GetLaunches(startdate, enddate);
-
-        //    if (responseText == null) 
-        //    {
-        //        _logger.LogInformation("No data retrieved");
-        //        return;
-        //    }
-        //}
     }
 }

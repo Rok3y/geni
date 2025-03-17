@@ -62,7 +62,7 @@ namespace LaunchService.Services
                     }
 
                     await smtpClient.SendMailAsync(mailMessage);
-                    //File.WriteAllText(@"C:\_code\geni_naloga\geni\test.html", GenerateHtmlBody(launches));
+                    File.WriteAllText(@"C:\_code\geni_naloga\geni\test.html", GenerateHtmlBody(week));
                     _logger.LogInformation($"Email successfully sent!");
                     return true;
                 }
@@ -76,8 +76,6 @@ namespace LaunchService.Services
 
         public async Task<bool> SendMailToRecipients(Dictionary<string, List<Launch>> modifiedLaunchWeek, Week week)
         {
-
-
             try
             {
                 using (var smtpClient = new SmtpClient(_smtpServer, _smtpPort))
@@ -87,7 +85,7 @@ namespace LaunchService.Services
 
                     var mailMessage = new MailMessage
                     {
-                        From = new MailAddress(_sender),
+                        From = new MailAddress(_senderEmail),
                         Subject = $"🚀 Updates for week {week.WeekNumber}: {week.WeekStart} - {week.WeekEnd}",
                         Body = GenerateHtmlBody_NewWeekLaunches(modifiedLaunchWeek, week),
                         IsBodyHtml = true
