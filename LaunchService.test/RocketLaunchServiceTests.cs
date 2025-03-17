@@ -3,26 +3,20 @@ using LaunchService.Services;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Moq.Protected;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace LaunchService.test
 {
     public class RocketLaunchServiceTests
     {
-        private Mock<ILaunchDbService> _dbServiceMock;
-        private Mock<IMailservice> _mailserviceMock;
-        private Configuration _configurationMock;
-        private Mock<HttpMessageHandler> _httpMessageHandlerMock;
-        private HttpClient _httpClientMock;
-        private readonly DateTime _dateNow = new DateTime(2025, 3, 15, 12, 0, 0);
-        private DateTime _startDate;
-        private DateTime _endDate;
-        private string testFolder;
+        private readonly Mock<ILaunchDbService> _dbServiceMock;
+        private readonly Mock<IMailservice> _mailserviceMock;
+        private readonly Configuration _configurationMock;
+        private HttpClient? _httpClientMock;
+        private readonly DateTime _dateNow = new DateTime(2025, 3, 15, 12, 0, 0, DateTimeKind.Utc);
+        private readonly DateTime _startDate;
+        private readonly DateTime _endDate;
+        private readonly string testFolder;
 
         public RocketLaunchServiceTests() 
         {
@@ -38,16 +32,10 @@ namespace LaunchService.test
                 SmtpServer = "mock-smtp.com"
             };
 
-            // HttpClient
-            //_httpMessageHandlerMock = new Mock<HttpMessageHandler>();
-
             // Mail service
             _mailserviceMock = new Mock<IMailservice>();
 
-
             // Datetime
-            // startDate ==> new DateTime(2025, 3, 17, 0, 0, 0);
-            // endDate   ==> new DateTime(2025, 3, 23, 23, 59, 59);
             (_startDate, _endDate) = Helper.GetNextWeekRange(_dateNow);
 
             // Test folder path
@@ -58,7 +46,7 @@ namespace LaunchService.test
         public async Task FeatchAndStoreData_HandlesFailedResponse()
         {
             // Arrange
-            var mockMessageHandler = GetMockMessageHandler(HttpStatusCode.NotFound, "");
+            var mockMessageHandler = GetMockMessageHandler(HttpStatusCode.NotFound, "response_empty.json");
             _httpClientMock = new HttpClient(mockMessageHandler.Object);
 
             // Act & Assert
@@ -70,11 +58,7 @@ namespace LaunchService.test
         public async Task FeatchAndStoreData_HandlesResponseMessage()
         {
             // Arrange
-            string testDataFilePath = Path.Combine(testFolder, "response1.json");
-            Assert.True(File.Exists(testDataFilePath));
-            string responseBody = File.ReadAllText(testDataFilePath);
-
-            var mockMessageHandler = GetMockMessageHandler(HttpStatusCode.OK, responseBody);
+            var mockMessageHandler = GetMockMessageHandler(HttpStatusCode.OK, "response1.json");
             _httpClientMock = new HttpClient(mockMessageHandler.Object);
 
             // Act & Assert
@@ -90,11 +74,7 @@ namespace LaunchService.test
         public async Task FeatchAndStoreData_HandlesEmptyResponseMessage()
         {
             // Arrange
-            string testDataFilePath = Path.Combine(testFolder, "response_empty.json");
-            Assert.True(File.Exists(testDataFilePath));
-            string responseBody = File.ReadAllText(testDataFilePath);
-
-            var mockMessageHandler = GetMockMessageHandler(HttpStatusCode.OK, responseBody);
+            var mockMessageHandler = GetMockMessageHandler(HttpStatusCode.OK, "response_empty.json");
             _httpClientMock = new HttpClient(mockMessageHandler.Object);
 
             // Act & Assert
@@ -106,11 +86,10 @@ namespace LaunchService.test
         }
 
         [Fact]
-        public async Task AnalyzeAndStoreLaunches_WithOutLaunches_ShouldNotCall_AddWeekAsync_And_SendMail()
+        public async Task StoreAndNotifyLaunches_WithoutLaunches_ShouldNotCall_AddWeekAsync_And_SendMail()
         {
             // Arrange
-
-            var mockMessageHandler = GetMockMessageHandler(HttpStatusCode.OK, string.Empty);
+            var mockMessageHandler = GetMockMessageHandler(HttpStatusCode.OK, "response_empty.json");
             _httpClientMock = new HttpClient(mockMessageHandler.Object);
 
             var rocketLaunchService = new RocketLaunchService(_httpClientMock, _dbServiceMock.Object, _configurationMock, _mailserviceMock.Object, NullLoggerFactory.Instance);
@@ -121,25 +100,24 @@ namespace LaunchService.test
                 .ReturnsAsync((Week)null);
 
             // Simulate that sending email succeeds
-            _mailserviceMock.Setup(m => m.SendMailToRecipients(It.IsAny<List<Launch>>()))
+            _mailserviceMock.Setup(m => m.SendMailToRecipients(It.IsAny<Week>()))
                 .ReturnsAsync(true);
 
             // Act
-            var week = await rocketLaunchService.AnalyzeAndStoreLaunches(launches, _dateNow);
+            var week = await rocketLaunchService.StoreAndNotifyLaunches(launches, _dateNow);
 
             // Assert
             Assert.Null(week);
             _dbServiceMock.Verify(db => db.AddWeekAsync(It.IsAny<Week>()), Times.Never());
             _dbServiceMock.Verify(db => db.UpdateWeekAsync(It.IsAny<Week>()), Times.Never());
-            _mailserviceMock.Verify(m => m.SendMailToRecipients(It.IsAny<List<Launch>>()), Times.Never());
+            _mailserviceMock.Verify(m => m.SendMailToRecipients(It.IsAny<Week>()), Times.Never());
         }
 
         [Fact]
-        public async Task AnalyzeAndStoreLaunches_WithLaunches_ShouldCall_AddWeekAsync_And_SendMail() 
+        public async Task StoreAndNotifyLaunches_WithLaunches_ShouldCall_AddWeekAsync_And_SendMail() 
         {
             // Arrange
-
-            var mockMessageHandler = GetMockMessageHandler(HttpStatusCode.OK, string.Empty);
+            var mockMessageHandler = GetMockMessageHandler(HttpStatusCode.OK, "response_empty.json");
             _httpClientMock = new HttpClient(mockMessageHandler.Object);
 
             var rocketLaunchService = new RocketLaunchService(_httpClientMock, _dbServiceMock.Object, _configurationMock, _mailserviceMock.Object, NullLoggerFactory.Instance);
@@ -150,24 +128,23 @@ namespace LaunchService.test
                 .ReturnsAsync((Week)null);
 
             // Simulate that sending email succeeds
-            _mailserviceMock.Setup(m => m.SendMailToRecipients(It.IsAny<List<Launch>>()))
+            _mailserviceMock.Setup(m => m.SendMailToRecipients(It.IsAny<Week>()))
                 .ReturnsAsync(true);
 
             // Act
-            await rocketLaunchService.AnalyzeAndStoreLaunches(launches, _dateNow);
+            await rocketLaunchService.StoreAndNotifyLaunches(launches, _dateNow);
 
             // Assert
             _dbServiceMock.Verify(db => db.AddWeekAsync(It.IsAny<Week>()), Times.Once());
             _dbServiceMock.Verify(db => db.UpdateWeekAsync(It.IsAny<Week>()), Times.Once());
-            _mailserviceMock.Verify(m => m.SendMailToRecipients(It.IsAny<List<Launch>>()), Times.Once());
+            _mailserviceMock.Verify(m => m.SendMailToRecipients(It.IsAny<Week>()), Times.Once());
         }
 
         [Fact]
-        public async Task AnalyzeAndStoreLaunches_WithAddedLaunches_ShouldCall_AddLaunchesAsync_And_SendMail()
+        public async Task StoreAndNotifyLaunches_WithExactSameLaunches_ShouldNotCallAnything()
         {
             // Arrange
-
-            var mockMessageHandler = GetMockMessageHandler(HttpStatusCode.OK, string.Empty);
+            var mockMessageHandler = GetMockMessageHandler(HttpStatusCode.OK, "response_empty.json");
             _httpClientMock = new HttpClient(mockMessageHandler.Object);
 
             var rocketLaunchService = new RocketLaunchService(_httpClientMock, _dbServiceMock.Object, _configurationMock, _mailserviceMock.Object, NullLoggerFactory.Instance);
@@ -178,39 +155,63 @@ namespace LaunchService.test
                 .ReturnsAsync(createWeekCopy(week));
 
             // Simulate that sending email succeeds
-            _mailserviceMock.Setup(m => m.SendMailToRecipients(It.IsAny<List<Launch>>()))
+            _mailserviceMock.Setup(m => m.SendMailToRecipients(It.IsAny<Week>()))
+                .ReturnsAsync(true);
+
+            // Act
+            await rocketLaunchService.StoreAndNotifyLaunches(week.Launches.ToList(), _dateNow);
+
+            // Assert
+            _dbServiceMock.Verify(db => db.AddLaunchesAsync(It.IsAny<List<Launch>>()), Times.Never());
+            _dbServiceMock.Verify(db => db.UpdateLaunches(It.IsAny<List<Launch>>()), Times.Never());
+            _mailserviceMock.Verify(m => m.SendMailToRecipients(It.IsAny<Dictionary<string, List<Launch>>>(), It.IsAny<Week>()), Times.Never());
+        }
+
+        [Fact]
+        public async Task StoreAndNotifyLaunches_WithAddedLaunches_ShouldCall_AddLaunchesAsync_And_SendMail()
+        {
+            // Arrange
+            var mockMessageHandler = GetMockMessageHandler(HttpStatusCode.OK, "response_empty.json");
+            _httpClientMock = new HttpClient(mockMessageHandler.Object);
+
+            var rocketLaunchService = new RocketLaunchService(_httpClientMock, _dbServiceMock.Object, _configurationMock, _mailserviceMock.Object, NullLoggerFactory.Instance);
+            var week = PrepareBaseData();
+
+            // Simulate that the week does not exist in the database
+            _dbServiceMock.Setup(db => db.GetWeek(It.IsAny<int>(), It.IsAny<int>()))
+                .ReturnsAsync(createWeekCopy(week));
+
+            // Simulate that sending email succeeds
+            _mailserviceMock.Setup(m => m.SendMailToRecipients(It.IsAny<Week>()))
                 .ReturnsAsync(true);
 
             // Update launch date time the for first launch object 
             var launches = week.Launches.ToList();
             launches.Add(new Launch()
             {
-                RocketId = "2",
+                RocketId = "3",
                 T0 = _startDate.AddDays(4).AddHours(14).AddMinutes(20),
-                Notified = false,
                 RocketName = "Ceres-1",
+                Status = LaunchStatus.GoForLaunch,
+                LastUpdated = DateTime.MinValue,
                 Week = week,
                 WeekId = week.Id
             });
 
             // Act
-            await rocketLaunchService.AnalyzeAndStoreLaunches(launches, _dateNow);
+            await rocketLaunchService.StoreAndNotifyLaunches(launches, _dateNow);
 
             // Assert
             _dbServiceMock.Verify(db => db.AddLaunchesAsync(new List<Launch> { launches[2] }), Times.Once());
-            _mailserviceMock.Verify(m => m.SendMailToRecipients(It.IsAny<Dictionary<string, List<Launch>>>()), Times.Once());
+            _dbServiceMock.Verify(db => db.UpdateLaunches(It.IsAny<List<Launch>>()), Times.Never());
+            _mailserviceMock.Verify(m => m.SendMailToRecipients(It.IsAny<Dictionary<string, List<Launch>>>(), It.IsAny<Week>()), Times.Once());
         }
 
         [Fact]
-        public async Task AnalyzeAndStoreLaunches_WithRemovedLaunches_ShouldCall_AddLaunchesAsync_And_SendMail()
-        { }
-
-            [Fact]
-        public async Task AnalyzeAndStoreLaunches_WithUpdatedLaunches_ShouldCall_GetAllLaunchesForWeek_And_SendMail()
+        public async Task StoreAndNotifyLaunches_WithCanceledLaunches_ShouldCall_AddLaunchesAsync_And_SendMail()
         {
             // Arrange
-
-            var mockMessageHandler = GetMockMessageHandler(HttpStatusCode.OK, string.Empty);
+            var mockMessageHandler = GetMockMessageHandler(HttpStatusCode.OK, "response_empty.json");
             _httpClientMock = new HttpClient(mockMessageHandler.Object);
 
             var rocketLaunchService = new RocketLaunchService(_httpClientMock, _dbServiceMock.Object, _configurationMock, _mailserviceMock.Object, NullLoggerFactory.Instance);
@@ -221,19 +222,126 @@ namespace LaunchService.test
                 .ReturnsAsync(createWeekCopy(week));
 
             // Simulate that sending email succeeds
-            _mailserviceMock.Setup(m => m.SendMailToRecipients(It.IsAny<List<Launch>>()))
+            _mailserviceMock.Setup(m => m.SendMailToRecipients(It.IsAny<Week>()))
                 .ReturnsAsync(true);
 
             // Update launch date time the for first launch object 
             var launches = week.Launches.ToList();
+            launches[0].LastUpdated = launches[0].LastUpdated.AddDays(2).AddHours(5);
+            launches[0].Status = LaunchStatus.OnHold;
+
+            // Act
+            await rocketLaunchService.StoreAndNotifyLaunches(launches, _dateNow);
+
+            // Assert
+            _dbServiceMock.Verify(db => db.AddLaunchesAsync(It.IsAny<List<Launch>>()), Times.Never());
+            _dbServiceMock.Verify(db => db.UpdateLaunches(new List<Launch> { launches[0] }), Times.Once());
+            _mailserviceMock.Verify(m => m.SendMailToRecipients(It.IsAny<Dictionary<string, List<Launch>>>(), It.IsAny<Week>()), Times.Once());
+        }
+
+        [Fact]
+        public async Task StoreAndNotifyLaunches_WithUpdatedT0Launches_ShouldCall_UpdateLaunchesk_And_SendMail()
+        {
+            // Arrange
+
+            var mockMessageHandler = GetMockMessageHandler(HttpStatusCode.OK, "response_empty.json");
+            _httpClientMock = new HttpClient(mockMessageHandler.Object);
+
+            var rocketLaunchService = new RocketLaunchService(_httpClientMock, _dbServiceMock.Object, _configurationMock, _mailserviceMock.Object, NullLoggerFactory.Instance);
+            var week = PrepareBaseData();
+
+            // Simulate that the week does not exist in the database
+            _dbServiceMock.Setup(db => db.GetWeek(It.IsAny<int>(), It.IsAny<int>()))
+                .ReturnsAsync(createWeekCopy(week));
+
+            // Simulate that sending email succeeds
+            _mailserviceMock.Setup(m => m.SendMailToRecipients(It.IsAny<Week>()))
+                .ReturnsAsync(true);
+
+            // Update launch date time the for first launch object 
+            var launches = week.Launches.ToList();
+            launches[0].LastUpdated = launches[0].LastUpdated.AddDays(2).AddHours(5);
             launches[0].T0 = launches[0].T0.AddDays(1).AddHours(-3);
 
             // Act
-            await rocketLaunchService.AnalyzeAndStoreLaunches(launches, _dateNow);
+            await rocketLaunchService.StoreAndNotifyLaunches(launches, _dateNow);
 
             // Assert
-            _dbServiceMock.Verify(db => db.UpdateLaunch(launches[0]), Times.Once());
-            _mailserviceMock.Verify(m => m.SendMailToRecipients(It.IsAny<Dictionary<string, List<Launch>>>()), Times.Once());
+            _dbServiceMock.Verify(db => db.AddLaunchesAsync(It.IsAny<List<Launch>>()), Times.Never());
+            _dbServiceMock.Verify(db => db.UpdateLaunches(new List<Launch> { launches[0] }), Times.Once());
+            _mailserviceMock.Verify(m => m.SendMailToRecipients(It.IsAny<Dictionary<string, List<Launch>>>(), It.IsAny<Week>()), Times.Once());
+        }
+
+        [Fact]
+        public async Task StoreAndNotifyLaunches_WithAddedAndUpdatedT0Launches_ShouldCall_UpdateLaunches_AddLaunchesAsync_And_SendMail()
+        {
+            // Arrange
+            var mockMessageHandler = GetMockMessageHandler(HttpStatusCode.OK, "response_empty.json");
+            _httpClientMock = new HttpClient(mockMessageHandler.Object);
+
+            var rocketLaunchService = new RocketLaunchService(_httpClientMock, _dbServiceMock.Object, _configurationMock, _mailserviceMock.Object, NullLoggerFactory.Instance);
+            var week = PrepareBaseData();
+
+            // Simulate that the week does not exist in the database
+            _dbServiceMock.Setup(db => db.GetWeek(It.IsAny<int>(), It.IsAny<int>()))
+                .ReturnsAsync(createWeekCopy(week));
+
+            // Simulate that sending email succeeds
+            _mailserviceMock.Setup(m => m.SendMailToRecipients(It.IsAny<Week>()))
+                .ReturnsAsync(true);
+
+            // Update launch date time the for first launch object 
+            var launches = week.Launches.ToList();
+            launches[0].LastUpdated = launches[0].LastUpdated.AddDays(2).AddHours(5);
+            launches[0].T0 = launches[0].T0.AddDays(1).AddHours(-3);
+            launches.Add(new Launch()
+            {
+                RocketId = "3",
+                T0 = _startDate.AddDays(4).AddHours(14).AddMinutes(20),
+                RocketName = "Ceres-1",
+                Status = LaunchStatus.GoForLaunch,
+                LastUpdated = DateTime.MinValue,
+                Week = week,
+                WeekId = week.Id
+            });
+
+            // Act
+            await rocketLaunchService.StoreAndNotifyLaunches(launches, _dateNow);
+
+            // Assert
+            _dbServiceMock.Verify(db => db.AddLaunchesAsync(It.IsAny<List<Launch>>()), Times.Once());
+            _dbServiceMock.Verify(db => db.UpdateLaunches(new List<Launch> { launches[0] }), Times.Once());
+            _mailserviceMock.Verify(m => m.SendMailToRecipients(It.IsAny<Dictionary<string, List<Launch>>>(), It.IsAny<Week>()), Times.Once());
+        }
+
+        [Fact]
+        public async Task StoreAndNotifyLaunches_WithNewLaunchesAndUpdates_ShouldNotCall_UpdateLaunches_AddLaunchesAsync_And_SendMail()
+        {
+            // Arrange
+            var mockMessageHandler = GetMockMessageHandler(HttpStatusCode.OK, "response_empty.json");
+            _httpClientMock = new HttpClient(mockMessageHandler.Object);
+
+            var rocketLaunchService = new RocketLaunchService(_httpClientMock, _dbServiceMock.Object, _configurationMock, _mailserviceMock.Object, NullLoggerFactory.Instance);
+            var week = PrepareBaseData();
+
+            // Simulate that the week does not exist in the database
+            _dbServiceMock.Setup(db => db.GetWeek(It.IsAny<int>(), It.IsAny<int>()))
+                .ReturnsAsync(createWeekCopy(week));
+
+            // Simulate that sending email succeeds
+            _mailserviceMock.Setup(m => m.SendMailToRecipients(It.IsAny<Week>()))
+                .ReturnsAsync(true);
+
+            // Update launch date time the for first launch object 
+            var launches = week.Launches.ToList();
+
+            // Act
+            await rocketLaunchService.StoreAndNotifyLaunches(launches, _dateNow);
+
+            // Assert
+            _mailserviceMock.VerifyNoOtherCalls();
+            _dbServiceMock.Verify(db => db.AddLaunchesAsync(It.IsAny<List<Launch>>()), Times.Never());
+            _dbServiceMock.Verify(db => db.UpdateLaunches(new List<Launch>()), Times.Never());
         }
 
         private Week PrepareBaseData()
@@ -253,8 +361,9 @@ namespace LaunchService.test
             {
                 RocketId = "1",
                 T0 = _startDate.AddDays(3).AddHours(12).AddMinutes(30),
-                Notified = false,
                 RocketName = "Falcon 9",
+                Status = LaunchStatus.GoForLaunch,
+                LastUpdated = DateTime.MinValue,
                 Week = week,
                 WeekId = week.Id
             };
@@ -263,8 +372,9 @@ namespace LaunchService.test
             {
                 RocketId = "2",
                 T0 = _startDate.AddDays(4).AddHours(14).AddMinutes(20),
-                Notified = false,
                 RocketName = "Ceres-1",
+                Status = LaunchStatus.GoForLaunch,
+                LastUpdated = DateTime.MinValue,
                 Week = week,
                 WeekId = week.Id
             };
@@ -289,14 +399,20 @@ namespace LaunchService.test
                     Id = l.Id,
                     RocketId = l.RocketId,
                     RocketName = l.RocketName,
+                    Status = l.Status,
+                    LastUpdated = l.LastUpdated,
                     T0 = l.T0,
                     WeekId = l.WeekId
                 }).ToList()
             };
         }
 
-        private Mock<HttpMessageHandler> GetMockMessageHandler(HttpStatusCode statusCode, string responseBody)
+        private Mock<HttpMessageHandler> GetMockMessageHandler(HttpStatusCode statusCode, string responseBodyFile)
         {
+            string testDataFilePath = Path.Combine(testFolder, responseBodyFile);
+            Assert.True(File.Exists(testDataFilePath));
+            string responseBody = File.ReadAllText(testDataFilePath);
+
             var mockMessageHandler = new Mock<HttpMessageHandler>();
             mockMessageHandler.Protected() // To mock procteded method of SendAsync in HttpMessageHandler class
                 .Setup<Task<HttpResponseMessage>>(

@@ -27,8 +27,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="TestData\response1_removed.json">
+    <None Update="TestData\reponse1_newLaunch.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestData\response1_combined.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="TestData\response1_canceled.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="TestData\response1_updated_launch.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -37,7 +43,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="TestData\response1.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 

@@ -22,8 +22,8 @@ namespace LaunchService.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("TEXT");
 
-                    b.Property<bool>("Notified")
-                        .HasColumnType("INTEGER");
+                    b.Property<DateTime>("LastUpdated")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("RocketId")
                         .IsRequired()
@@ -32,6 +32,9 @@ namespace LaunchService.Migrations
                     b.Property<string>("RocketName")
                         .IsRequired()
                         .HasColumnType("TEXT");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("T0")
                         .HasColumnType("TEXT");

@@ -33,8 +33,9 @@ namespace LaunchService.Migrations
                 {
                     Id = table.Column<string>(type: "TEXT", nullable: false),
                     RocketId = table.Column<string>(type: "TEXT", nullable: false),
+                    Status = table.Column<int>(type: "INTEGER", nullable: false),
                     T0 = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    Notified = table.Column<bool>(type: "INTEGER", nullable: false),
+                    LastUpdated = table.Column<DateTime>(type: "TEXT", nullable: false),
                     RocketName = table.Column<string>(type: "TEXT", nullable: false),
                     WeekId = table.Column<string>(type: "TEXT", nullable: false)
                 },

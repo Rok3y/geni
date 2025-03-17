@@ -13,7 +13,6 @@ namespace LaunchService.Model
         public int Year { get; set; }
         public DateTime WeekStart { get; set; }
         public DateTime WeekEnd { get; set; }
-        //public bool UserNotified { get; set; }
         public DateTime Notified { get; set; }
         public ICollection<Launch> Launches { get; set; } = new List<Launch>();
 

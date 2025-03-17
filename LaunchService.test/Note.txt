@@ -22,12 +22,17 @@ TestData:
 			* window_end:	2025-03-21T11:47:00Z --> 2025-03-22T20:15:00Z
 			* window_start: 2025-03-21T11:00:00Z --> 2025-03-22T16:15:00Z
 
-	- reponse1_removed.json: Same as response.json but with removed one launch object:
-		- removed:
+	- reponse1_canceled.json: Same as response.json but with one launch canceled:
+		- canceled:
 			* id: ad025362-828f-448c-855d-bfe53e04cdeb
 			* name: Electron | High Five (KinÃ©is 21-25)
+			* last_updated: 2025-03-10T18:15:04Z --> 2025-03-15T12:30:51Z
+			* status: 1 --> 5
 
 	- response_newLaunch.json: Same as response1.json but with added new launch object:
 		- added:
 			* id: e652a538-6d40-4b55-97a6-7c757ec4e1e9
 			* name: Spectrum | Maiden Flight
+
+	- response_combined.json: Same as response1.json but with all changes from other files (resposne1_update, response1_canceled, response_newLaunch)
+		- Check other files for changes

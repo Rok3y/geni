@@ -1,11 +1,6 @@
 ﻿using LaunchService.Model;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace LaunchService.Services
 {
@@ -13,10 +8,8 @@ namespace LaunchService.Services
     {
         Task AddLaunchAsync(Launch launch);
         Task AddLaunchesAsync(List<Launch> launches);
-        Task<Launch> GetLaunchById(string id);
-        Task RemoveLaunchAsync(Launch launch);
-        Task RemoveLaunchesAsync(List<Launch> launches);
-        Task UpdateLaunch(Launch launch);
+        Task<Launch> GetLaunchById(string launchId);
+        Task UpdateLaunches(List<Launch> launches);
 
         Task AddWeekAsync(Week week);
         Task<Week> GetWeek(int weekNumber, int year);
@@ -38,7 +31,7 @@ namespace LaunchService.Services
         {
             if(launch == null) throw new ArgumentNullException(nameof(launch));
 
-            var Launch = _dbContext.Launches.Add(launch);
+            _ = _dbContext.Launches.Add(launch);
             await _dbContext.SaveChangesAsync();
         }
 
@@ -56,30 +49,27 @@ namespace LaunchService.Services
             return await _dbContext.Launches.SingleOrDefaultAsync(i => i.Id == id);
         }
 
-        public async Task RemoveLaunchAsync(Launch launch)
-        {
-            if (launch == null)
-                throw new ArgumentNullException(nameof(launch));
-
-            _dbContext.Launches.Remove(launch);
-            await _dbContext.SaveChangesAsync();
-        }
-
-        public async Task RemoveLaunchesAsync(List<Launch> launches)
+        public async Task UpdateLaunches(List<Launch> launches)
         {
             if (launches.IsNullOrEmpty())
                 throw new ArgumentNullException(nameof(launches));
 
-            _dbContext.RemoveRange(launches);
-            await _dbContext.SaveChangesAsync();
-        }
 
-        public async Task UpdateLaunch(Launch launch)
-        {
-            if (launch == null)
-                throw new ArgumentNullException(nameof(launch));
+            foreach(var launch in launches)
+            {
+                var existingLaunch = await _dbContext.Launches.SingleOrDefaultAsync(l => l.Id == launch.Id && l.RocketId == launch.RocketId);
 
-            _dbContext.Launches.Update(launch);
+                if (existingLaunch != null)
+                {
+                    existingLaunch.Status = launch.Status;
+                    existingLaunch.LastUpdated = launch.LastUpdated;
+                    existingLaunch.RocketName = launch.RocketName;
+                    existingLaunch.T0 = launch.T0;
+
+                    _dbContext.Entry(existingLaunch).State = EntityState.Modified;
+                }
+            }
+
             await _dbContext.SaveChangesAsync();
         }
 
@@ -92,7 +82,7 @@ namespace LaunchService.Services
             if (week == null)
                 throw new ArgumentNullException(nameof(week));
 
-            _dbContext.Weeks.Add(week);
+            _ = _dbContext.Weeks.Add(week);
             await _dbContext.SaveChangesAsync();
         }
 

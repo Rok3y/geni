@@ -1,6 +1,6 @@
 namespace LaunchService.test
 {
-    public class UnitTest1
+    public class HelperTests
     {
         [Fact]
         public void Test_GetNextWeekRange1()

@@ -1,23 +1,15 @@
 ﻿using LaunchService.Model;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 using System.Web;
-using System.Globalization;
 
 namespace LaunchService.Services
 {
     public interface IRocketLaunchService
     {
         Task<List<Launch>> FetchLaunches(DateTime currentDate);
-        Task<Week> AnalyzeAndStoreLaunches(List<Launch> launches, DateTime currentDate);
+        Task<Week> StoreAndNotifyLaunches(List<Launch> launches, DateTime currentDate);
     }
 
     public class RocketLaunchService : IRocketLaunchService
@@ -62,8 +54,9 @@ namespace LaunchService.Services
                 throw new HttpRequestException($"API requst failed with status {response.StatusCode}: {response.ReasonPhrase}");
             }
 
-            _logger.LogInformation($"Success! Status: {response.StatusCode}");
+            _logger.LogInformation($"Success! Status: {response.StatusCode} for request {url}");
             string responseBody = await response.Content.ReadAsStringAsync();
+            //string responseBody = await File.ReadAllTextAsync(@"..\..\..\..\LaunchService.test\TestData\response1.json");
 
             // Deserialize JSON
             using JsonDocument doc = JsonDocument.Parse(responseBody);
@@ -81,15 +74,19 @@ namespace LaunchService.Services
             var results = doc.RootElement.GetProperty("results");
             foreach (var item in results.EnumerateArray())
             {
-                string launchId = item.GetProperty("id").GetString() ?? string.Empty;
+                string rocketId = item.GetProperty("id").GetString() ?? string.Empty;
                 string rocketName = item.GetProperty("name").GetString() ?? "Unkown rocket";
+                uint launchStatus = item.GetProperty("status").GetProperty("id").GetUInt32();
+                DateTime lastUpdated = item.GetProperty("last_updated").GetDateTime();
                 DateTime launchDate = item.GetProperty("net").GetDateTime();
+
                 var launch = new Launch()
                 {
-                    Id = launchId,
-                    T0 = launchDate,
+                    RocketId = rocketId,
                     RocketName = rocketName,
-                    Notified = false
+                    Status = (LaunchStatus)launchStatus,
+                    T0 = launchDate,
+                    LastUpdated = lastUpdated
                 };
                 launches.Add(launch);
             }
@@ -98,25 +95,25 @@ namespace LaunchService.Services
             return launches;
         }
 
-        public async Task<Week> AnalyzeAndStoreLaunches(List<Launch> launches, DateTime currentDate)
+        public async Task<Week> StoreAndNotifyLaunches(List<Launch> launches, DateTime currentDate)
         {
-            if (launches.IsNullOrEmpty())
-            {
-                _logger.LogInformation($"No launches to store");
-                return null;
-            }
-
             bool sendMailStatus = false;
+            bool shouldSendEmail = false;
             var (startDate, endDate) = Helper.GetNextWeekRange(currentDate);
             int weekNumber = Helper.GetWeekNumber(startDate);
 
             var week = await _db.GetWeek(weekNumber, startDate.Year);
 
+            if (launches.IsNullOrEmpty())
+            {
+                _logger.LogInformation($"No launches to store");
+                return week;
+            }
+
             if (week != null)
             {
                 var launchesDict = new Dictionary<string, List<Launch>>();
                 launchesDict["added"] = new List<Launch>();
-                launchesDict["removed"] = new List<Launch>();
                 launchesDict["modified"] = new List<Launch>();
 
                 // Check for differences and send the update
@@ -124,25 +121,44 @@ namespace LaunchService.Services
 
                 if (storedLaunches.Count != launches.Count)
                 {
-                    // Get all newly added/removed launches that from the current week
-                    launchesDict["added"] = launches.Where(newLaunch => !storedLaunches.Any(oldLaunch => oldLaunch == newLaunch)).ToList();
-                    launchesDict["removed"] = storedLaunches.Where(oldLaunch => !launches.Any(newLaunch => newLaunch == oldLaunch)).ToList();
+                    // Get all newly added launches for the current week
+                    launchesDict["added"] = launches.Where(newLaunch => !storedLaunches.Any(oldLaunch => oldLaunch.RocketId == newLaunch.RocketId)).ToList();
+                    launchesDict["added"].ForEach(newLaunch => week.Launches.Add(newLaunch));
+                    shouldSendEmail = true;
                 }
 
                 // Get all modified launch objects
-                launchesDict["modified"] = launches.Where(l => !storedLaunches.Contains(l)).ToList();
-                
-                // Update week with modified launches
+                foreach (var launch in launches)
+                {
+                    var storedLaunch = storedLaunches.SingleOrDefault(l => l.RocketId == launch.RocketId);
+                    if (storedLaunch != null && storedLaunch.LastUpdated != launch.LastUpdated)
+                    {
+                        // Check if removed or status changed
+                        if (storedLaunch.Status != launch.Status || !storedLaunch.T0.Equals(launch.T0))
+                        {                            
+                            //Update properties of the existing storedLaunch
+                            storedLaunch.RocketName = launch.RocketName;
+                            storedLaunch.Status = launch.Status;
+                            storedLaunch.T0 = launch.T0;
+                            storedLaunch.LastUpdated = launch.LastUpdated;
+                            shouldSendEmail = true;
+
+                            launchesDict["modified"].Add(storedLaunch);
+                        }
+                    }
+                }
+
+                // Update week with added/modified launches
                  if (!launchesDict["added"].IsNullOrEmpty())
                     await _db.AddLaunchesAsync(launchesDict["added"]);
 
-                if (!launchesDict["removed"].IsNullOrEmpty())
-                    await _db.RemoveLaunchesAsync(launchesDict["removed"]);
+                if (!launchesDict["modified"].IsNullOrEmpty())
+                    await _db.UpdateLaunches(launchesDict["modified"]);
 
-                foreach(var l in launchesDict["modified"])
-                    await _db.UpdateLaunch(l);
-
-                sendMailStatus = await _mailservice.SendMailToRecipients(launchesDict);
+                if (shouldSendEmail)
+                    sendMailStatus = await _mailservice.SendMailToRecipients(launchesDict, week);
+                else
+                    _logger.LogInformation($"No chanes for the upcoming week {week.WeekStart} - {week.WeekEnd}");
             }
             else 
             {
@@ -166,7 +182,7 @@ namespace LaunchService.Services
                 await _db.AddWeekAsync(week);
 
                 // Send the update
-                sendMailStatus = await _mailservice.SendMailToRecipients(launches);
+                sendMailStatus = await _mailservice.SendMailToRecipients(week);
             }
 
             if (sendMailStatus)
@@ -180,14 +196,6 @@ namespace LaunchService.Services
             return week;
         }
 
-        private async Task<bool> CheckForUpdate(int weekNumber, DateTime date)
-        {
-            List<Launch> storedLaunches = await _db.GetAllLaunchesForWeek(weekNumber, date.Year);
-            return true;
-
-        }
-
-        [assembly: InternalsVisibleTo("LaunchService.test")]
         private Uri createUrl(DateTime start, DateTime end, Dictionary<string, string> queryParams)
         {
             var uriBuilder = new UriBuilder(_configuration.ApiBaseUrl);

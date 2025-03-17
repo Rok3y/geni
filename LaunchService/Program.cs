@@ -50,8 +50,10 @@ namespace LaunchService
 
             var currentDate = DateTime.Now;
             var launches = await _rocketLaunchService.FetchLaunches(currentDate);
+            var week = await _rocketLaunchService.StoreAndNotifyLaunches(launches, currentDate);
 
             Console.WriteLine($"Number of launches: {launches.Count}");
+            //await _mailservice.SendMailToRecipients(launches);
 
             Console.ReadLine();
         }

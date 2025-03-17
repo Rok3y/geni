@@ -1,10 +1,12 @@
 ﻿using LaunchService.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace LaunchService
@@ -65,8 +67,8 @@ namespace LaunchService
                     .AddJsonFile(ConfigurationMailFile, optional: false, reloadOnChange: true)
                     .Build();
 
-                var recipients = mailConfig.GetSection("emails").Get<List<string>>();
-                if (recipients == null || recipients.Count == 0)
+                Recipients = mailConfig.GetSection("emails").Get<List<string>>();
+                if (Recipients == null || Recipients.Count == 0)
                 {
                     _logger.LogWarning("No recipients defined in the configuration file!");
                 }

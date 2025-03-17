@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LaunchService.Migrations
 {
     [DbContext(typeof(LaunchDbContext))]
-    [Migration("20250315091923_InitialCreate")]
+    [Migration("20250317094249_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -25,8 +25,8 @@ namespace LaunchService.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("TEXT");
 
-                    b.Property<bool>("Notified")
-                        .HasColumnType("INTEGER");
+                    b.Property<DateTime>("LastUpdated")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("RocketId")
                         .IsRequired()
@@ -35,6 +35,9 @@ namespace LaunchService.Migrations
                     b.Property<string>("RocketName")
                         .IsRequired()
                         .HasColumnType("TEXT");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("T0")
                         .HasColumnType("TEXT");
