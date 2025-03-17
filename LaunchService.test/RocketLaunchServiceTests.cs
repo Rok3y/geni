@@ -11,26 +11,21 @@ namespace LaunchService.test
     {
         private readonly Mock<ILaunchDbService> _dbServiceMock;
         private readonly Mock<IMailservice> _mailserviceMock;
-        private readonly Configuration _configurationMock;
         private HttpClient? _httpClientMock;
         private readonly DateTime _dateNow = new DateTime(2025, 3, 15, 12, 0, 0, DateTimeKind.Utc);
         private readonly DateTime _startDate;
         private readonly DateTime _endDate;
         private readonly string testFolder;
 
-        public RocketLaunchServiceTests() 
+        public RocketLaunchServiceTests()
         {
+            Environment.SetEnvironmentVariable("BaseUrl", "https://test-api.com/");
+            Environment.SetEnvironmentVariable("LaunchesUrl", "launchTestUrl");
+            Environment.SetEnvironmentVariable("test_email", "testUrl");
+            Environment.SetEnvironmentVariable("test_password_email", "testUrl");
+
             // DB service
             _dbServiceMock = new Mock<ILaunchDbService>();
-
-            // Configuration
-            _configurationMock = new Configuration(NullLoggerFactory.Instance)
-            {
-                ApiBaseUrl = "https://test-mock-api.com",
-                ApiLaunchesUrl = "/launches/upcoming",
-                ApiKey = "mock-api-key",
-                SmtpServer = "mock-smtp.com"
-            };
 
             // Mail service
             _mailserviceMock = new Mock<IMailservice>();
@@ -46,11 +41,12 @@ namespace LaunchService.test
         public async Task FeatchAndStoreData_HandlesFailedResponse()
         {
             // Arrange
+            SetEnvVariable();
             var mockMessageHandler = GetMockMessageHandler(HttpStatusCode.NotFound, "response_empty.json");
             _httpClientMock = new HttpClient(mockMessageHandler.Object);
 
             // Act & Assert
-            var rocketLaunchService = new RocketLaunchService(_httpClientMock, _dbServiceMock.Object, _configurationMock, _mailserviceMock.Object, NullLoggerFactory.Instance);
+            var rocketLaunchService = new RocketLaunchService(_httpClientMock, _dbServiceMock.Object, _mailserviceMock.Object, NullLoggerFactory.Instance);
             await Assert.ThrowsAsync<HttpRequestException>(async () => await rocketLaunchService.FetchLaunches(_dateNow));
         }
 
@@ -62,7 +58,7 @@ namespace LaunchService.test
             _httpClientMock = new HttpClient(mockMessageHandler.Object);
 
             // Act & Assert
-            var rocketLaunchService = new RocketLaunchService(_httpClientMock, _dbServiceMock.Object, _configurationMock, _mailserviceMock.Object, NullLoggerFactory.Instance);
+            var rocketLaunchService = new RocketLaunchService(_httpClientMock, _dbServiceMock.Object, _mailserviceMock.Object, NullLoggerFactory.Instance);
             var launches = await rocketLaunchService.FetchLaunches(_dateNow);
 
             Assert.NotEmpty(launches);
@@ -78,7 +74,7 @@ namespace LaunchService.test
             _httpClientMock = new HttpClient(mockMessageHandler.Object);
 
             // Act & Assert
-            var rocketLaunchService = new RocketLaunchService(_httpClientMock, _dbServiceMock.Object, _configurationMock, _mailserviceMock.Object, NullLoggerFactory.Instance);
+            var rocketLaunchService = new RocketLaunchService(_httpClientMock, _dbServiceMock.Object, _mailserviceMock.Object, NullLoggerFactory.Instance);
             var launches = await rocketLaunchService.FetchLaunches(_dateNow);
 
             Assert.NotNull(launches);
@@ -92,7 +88,7 @@ namespace LaunchService.test
             var mockMessageHandler = GetMockMessageHandler(HttpStatusCode.OK, "response_empty.json");
             _httpClientMock = new HttpClient(mockMessageHandler.Object);
 
-            var rocketLaunchService = new RocketLaunchService(_httpClientMock, _dbServiceMock.Object, _configurationMock, _mailserviceMock.Object, NullLoggerFactory.Instance);
+            var rocketLaunchService = new RocketLaunchService(_httpClientMock, _dbServiceMock.Object, _mailserviceMock.Object, NullLoggerFactory.Instance);
             var launches = new List<Launch> { };
 
             // Simulate that the week does not exist in the database
@@ -120,7 +116,7 @@ namespace LaunchService.test
             var mockMessageHandler = GetMockMessageHandler(HttpStatusCode.OK, "response_empty.json");
             _httpClientMock = new HttpClient(mockMessageHandler.Object);
 
-            var rocketLaunchService = new RocketLaunchService(_httpClientMock, _dbServiceMock.Object, _configurationMock, _mailserviceMock.Object, NullLoggerFactory.Instance);
+            var rocketLaunchService = new RocketLaunchService(_httpClientMock, _dbServiceMock.Object, _mailserviceMock.Object, NullLoggerFactory.Instance);
             var launches = PrepareBaseData().Launches.ToList();
 
             // Simulate that the week does not exist in the database
@@ -147,7 +143,7 @@ namespace LaunchService.test
             var mockMessageHandler = GetMockMessageHandler(HttpStatusCode.OK, "response_empty.json");
             _httpClientMock = new HttpClient(mockMessageHandler.Object);
 
-            var rocketLaunchService = new RocketLaunchService(_httpClientMock, _dbServiceMock.Object, _configurationMock, _mailserviceMock.Object, NullLoggerFactory.Instance);
+            var rocketLaunchService = new RocketLaunchService(_httpClientMock, _dbServiceMock.Object, _mailserviceMock.Object, NullLoggerFactory.Instance);
             var week = PrepareBaseData();
 
             // Simulate that the week does not exist in the database
@@ -174,7 +170,7 @@ namespace LaunchService.test
             var mockMessageHandler = GetMockMessageHandler(HttpStatusCode.OK, "response_empty.json");
             _httpClientMock = new HttpClient(mockMessageHandler.Object);
 
-            var rocketLaunchService = new RocketLaunchService(_httpClientMock, _dbServiceMock.Object, _configurationMock, _mailserviceMock.Object, NullLoggerFactory.Instance);
+            var rocketLaunchService = new RocketLaunchService(_httpClientMock, _dbServiceMock.Object, _mailserviceMock.Object, NullLoggerFactory.Instance);
             var week = PrepareBaseData();
 
             // Simulate that the week does not exist in the database
@@ -214,7 +210,7 @@ namespace LaunchService.test
             var mockMessageHandler = GetMockMessageHandler(HttpStatusCode.OK, "response_empty.json");
             _httpClientMock = new HttpClient(mockMessageHandler.Object);
 
-            var rocketLaunchService = new RocketLaunchService(_httpClientMock, _dbServiceMock.Object, _configurationMock, _mailserviceMock.Object, NullLoggerFactory.Instance);
+            var rocketLaunchService = new RocketLaunchService(_httpClientMock, _dbServiceMock.Object, _mailserviceMock.Object, NullLoggerFactory.Instance);
             var week = PrepareBaseData();
 
             // Simulate that the week does not exist in the database
@@ -247,7 +243,7 @@ namespace LaunchService.test
             var mockMessageHandler = GetMockMessageHandler(HttpStatusCode.OK, "response_empty.json");
             _httpClientMock = new HttpClient(mockMessageHandler.Object);
 
-            var rocketLaunchService = new RocketLaunchService(_httpClientMock, _dbServiceMock.Object, _configurationMock, _mailserviceMock.Object, NullLoggerFactory.Instance);
+            var rocketLaunchService = new RocketLaunchService(_httpClientMock, _dbServiceMock.Object, _mailserviceMock.Object, NullLoggerFactory.Instance);
             var week = PrepareBaseData();
 
             // Simulate that the week does not exist in the database
@@ -279,7 +275,7 @@ namespace LaunchService.test
             var mockMessageHandler = GetMockMessageHandler(HttpStatusCode.OK, "response_empty.json");
             _httpClientMock = new HttpClient(mockMessageHandler.Object);
 
-            var rocketLaunchService = new RocketLaunchService(_httpClientMock, _dbServiceMock.Object, _configurationMock, _mailserviceMock.Object, NullLoggerFactory.Instance);
+            var rocketLaunchService = new RocketLaunchService(_httpClientMock, _dbServiceMock.Object, _mailserviceMock.Object, NullLoggerFactory.Instance);
             var week = PrepareBaseData();
 
             // Simulate that the week does not exist in the database
@@ -321,7 +317,7 @@ namespace LaunchService.test
             var mockMessageHandler = GetMockMessageHandler(HttpStatusCode.OK, "response_empty.json");
             _httpClientMock = new HttpClient(mockMessageHandler.Object);
 
-            var rocketLaunchService = new RocketLaunchService(_httpClientMock, _dbServiceMock.Object, _configurationMock, _mailserviceMock.Object, NullLoggerFactory.Instance);
+            var rocketLaunchService = new RocketLaunchService(_httpClientMock, _dbServiceMock.Object, _mailserviceMock.Object, NullLoggerFactory.Instance);
             var week = PrepareBaseData();
 
             // Simulate that the week does not exist in the database
@@ -425,6 +421,5 @@ namespace LaunchService.test
 
             return mockMessageHandler;
         }
-
     }
 }

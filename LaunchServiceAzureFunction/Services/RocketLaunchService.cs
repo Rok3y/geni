@@ -177,6 +177,7 @@ namespace LaunchService.Services
                 }
 
                 await _db.AddWeekAsync(week);
+                shouldSendEmail = true;
 
                 // Send the update
                 sendMailStatus = await _mailservice.SendMailToRecipients(week);

@@ -13,7 +13,6 @@ namespace LaunchService.test
         private readonly ILaunchDbService _launchDbService;
         private readonly LaunchDbContext _dbContext;
         private readonly Mock<IMailservice> _mailserviceMock;
-        private readonly Configuration _configurationMock;
         private HttpClient? _httpClientMock;
         private readonly DateTime _dateNow = new DateTime(2025, 3, 15, 12, 0, 0, DateTimeKind.Utc);
         private readonly DateTime _startDate;
@@ -22,18 +21,14 @@ namespace LaunchService.test
 
         public RocketLaunchIntegrationtests()
         {
+            Environment.SetEnvironmentVariable("BaseUrl", "https://test-api.com/");
+            Environment.SetEnvironmentVariable("LaunchesUrl", "launchTestUrl");
+            Environment.SetEnvironmentVariable("test_email", "testUrl");
+            Environment.SetEnvironmentVariable("test_password_email", "testUrl");
+
             // DB service
             _dbContext = GetInMemoryDbContext();
             _launchDbService = new LaunchDbService(_dbContext);
-
-            // Configuration
-            _configurationMock = new Configuration(NullLoggerFactory.Instance)
-            {
-                ApiBaseUrl = "https://test-mock-api.com",
-                ApiLaunchesUrl = "/launches/upcoming",
-                ApiKey = "mock-api-key",
-                SmtpServer = "mock-smtp.com"
-            };
 
             // Mail service
             _mailserviceMock = new Mock<IMailservice>();
@@ -52,7 +47,7 @@ namespace LaunchService.test
             var mockMessageHandler = GetMockMessageHandler(HttpStatusCode.OK, "response_empty.json");
             _httpClientMock = new HttpClient(mockMessageHandler.Object);
 
-            var rocketLaunchService = new RocketLaunchService(_httpClientMock, _launchDbService, _configurationMock, _mailserviceMock.Object, NullLoggerFactory.Instance);
+            var rocketLaunchService = new RocketLaunchService(_httpClientMock, _launchDbService, _mailserviceMock.Object, NullLoggerFactory.Instance);
 
             // Simulate that sending email succeeds
             _mailserviceMock.Setup(m => m.SendMailToRecipients(It.IsAny<Week>()))
@@ -77,7 +72,7 @@ namespace LaunchService.test
             var mockMessageHandler = GetMockMessageHandler(HttpStatusCode.OK, "response1.json");
             _httpClientMock = new HttpClient(mockMessageHandler.Object);
 
-            var rocketLaunchService = new RocketLaunchService(_httpClientMock, _launchDbService, _configurationMock, _mailserviceMock.Object, NullLoggerFactory.Instance);
+            var rocketLaunchService = new RocketLaunchService(_httpClientMock, _launchDbService, _mailserviceMock.Object, NullLoggerFactory.Instance);
 
             // Simulate that sending email succeeds
             _mailserviceMock.Setup(m => m.SendMailToRecipients(It.IsAny<Week>()))
@@ -102,7 +97,7 @@ namespace LaunchService.test
             var mockMessageHandler = GetMockMessageHandler(HttpStatusCode.OK, "response1.json");
             _httpClientMock = new HttpClient(mockMessageHandler.Object);
 
-            var rocketLaunchService = new RocketLaunchService(_httpClientMock, _launchDbService, _configurationMock, _mailserviceMock.Object, NullLoggerFactory.Instance);
+            var rocketLaunchService = new RocketLaunchService(_httpClientMock, _launchDbService, _mailserviceMock.Object, NullLoggerFactory.Instance);
 
             // Simulate that sending email succeeds
             _mailserviceMock.Setup(m => m.SendMailToRecipients(It.IsAny<Week>()))
@@ -128,7 +123,7 @@ namespace LaunchService.test
             var mockMessageHandler = GetMockMessageHandler(HttpStatusCode.OK, "response1.json");
             _httpClientMock = new HttpClient(mockMessageHandler.Object);
 
-            var rocketLaunchService = new RocketLaunchService(_httpClientMock, _launchDbService, _configurationMock, _mailserviceMock.Object, NullLoggerFactory.Instance);
+            var rocketLaunchService = new RocketLaunchService(_httpClientMock, _launchDbService, _mailserviceMock.Object, NullLoggerFactory.Instance);
 
             // Simulate that sending email succeeds
             _mailserviceMock.Setup(m => m.SendMailToRecipients(It.IsAny<Dictionary<string, List<Launch>>>(), It.IsAny<Week>()))
@@ -143,7 +138,7 @@ namespace LaunchService.test
             // Simulate second call with new response
             mockMessageHandler = GetMockMessageHandler(HttpStatusCode.OK, "reponse1_newLaunch.json");
             _httpClientMock = new HttpClient(mockMessageHandler.Object);
-            rocketLaunchService = new RocketLaunchService(_httpClientMock, _launchDbService, _configurationMock, _mailserviceMock.Object, NullLoggerFactory.Instance);
+            rocketLaunchService = new RocketLaunchService(_httpClientMock, _launchDbService, _mailserviceMock.Object, NullLoggerFactory.Instance);
 
             // Act
             var newlaunches = await rocketLaunchService.FetchLaunches(_dateNow);
@@ -166,7 +161,7 @@ namespace LaunchService.test
             var mockMessageHandler = GetMockMessageHandler(HttpStatusCode.OK, "response1.json");
             _httpClientMock = new HttpClient(mockMessageHandler.Object);
 
-            var rocketLaunchService = new RocketLaunchService(_httpClientMock, _launchDbService, _configurationMock, _mailserviceMock.Object, NullLoggerFactory.Instance);
+            var rocketLaunchService = new RocketLaunchService(_httpClientMock, _launchDbService, _mailserviceMock.Object, NullLoggerFactory.Instance);
 
             // Simulate that sending email succeeds
             _mailserviceMock.Setup(m => m.SendMailToRecipients(It.IsAny<Dictionary<string, List<Launch>>>(), It.IsAny<Week>()))
@@ -183,7 +178,7 @@ namespace LaunchService.test
             // Simulate second call with new response
             mockMessageHandler = GetMockMessageHandler(HttpStatusCode.OK, "response1_canceled.json");
             _httpClientMock = new HttpClient(mockMessageHandler.Object);
-            rocketLaunchService = new RocketLaunchService(_httpClientMock, _launchDbService, _configurationMock, _mailserviceMock.Object, NullLoggerFactory.Instance);
+            rocketLaunchService = new RocketLaunchService(_httpClientMock, _launchDbService, _mailserviceMock.Object, NullLoggerFactory.Instance);
 
             // Act
             var newlaunches = await rocketLaunchService.FetchLaunches(_dateNow);
@@ -206,7 +201,7 @@ namespace LaunchService.test
             var mockMessageHandler = GetMockMessageHandler(HttpStatusCode.OK, "response1.json");
             _httpClientMock = new HttpClient(mockMessageHandler.Object);
 
-            var rocketLaunchService = new RocketLaunchService(_httpClientMock, _launchDbService, _configurationMock, _mailserviceMock.Object, NullLoggerFactory.Instance);
+            var rocketLaunchService = new RocketLaunchService(_httpClientMock, _launchDbService, _mailserviceMock.Object, NullLoggerFactory.Instance);
 
             // Simulate that sending email succeeds
             _mailserviceMock.Setup(m => m.SendMailToRecipients(It.IsAny<Dictionary<string, List<Launch>>>(), It.IsAny<Week>()))
@@ -224,7 +219,7 @@ namespace LaunchService.test
             // Simulate second call with new response
             mockMessageHandler = GetMockMessageHandler(HttpStatusCode.OK, "response1_updated_launch.json");
             _httpClientMock = new HttpClient(mockMessageHandler.Object);
-            rocketLaunchService = new RocketLaunchService(_httpClientMock, _launchDbService, _configurationMock, _mailserviceMock.Object, NullLoggerFactory.Instance);
+            rocketLaunchService = new RocketLaunchService(_httpClientMock, _launchDbService, _mailserviceMock.Object, NullLoggerFactory.Instance);
 
             // Act
             var newlaunches = await rocketLaunchService.FetchLaunches(_dateNow);
@@ -259,7 +254,7 @@ namespace LaunchService.test
             var mockMessageHandler = GetMockMessageHandler(HttpStatusCode.OK, "response1.json");
             _httpClientMock = new HttpClient(mockMessageHandler.Object);
 
-            var rocketLaunchService = new RocketLaunchService(_httpClientMock, _launchDbService, _configurationMock, _mailserviceMock.Object, NullLoggerFactory.Instance);
+            var rocketLaunchService = new RocketLaunchService(_httpClientMock, _launchDbService, _mailserviceMock.Object, NullLoggerFactory.Instance);
 
             // Simulate that sending email succeeds
             _mailserviceMock.Setup(m => m.SendMailToRecipients(It.IsAny<Dictionary<string, List<Launch>>>(), It.IsAny<Week>()))
@@ -277,7 +272,7 @@ namespace LaunchService.test
             // Simulate second call with new response
             mockMessageHandler = GetMockMessageHandler(HttpStatusCode.OK, "response1_combined.json");
             _httpClientMock = new HttpClient(mockMessageHandler.Object);
-            rocketLaunchService = new RocketLaunchService(_httpClientMock, _launchDbService, _configurationMock, _mailserviceMock.Object, NullLoggerFactory.Instance);
+            rocketLaunchService = new RocketLaunchService(_httpClientMock, _launchDbService, _mailserviceMock.Object, NullLoggerFactory.Instance);
 
             // Act
             var newlaunches = await rocketLaunchService.FetchLaunches(_dateNow);

@@ -30,9 +30,9 @@ namespace LaunchService.Services
         {
             _smtpServer = "smtp.gmail.com";
             _smtpPort = 587;
-            _smtpUser = "vozi002@gmail.com";
-            _smtpPassword = "jwqb bjpa kyol lhia";
-            _senderEmail = "vozi002@gmail.com";
+            _smtpUser = Environment.GetEnvironmentVariable("test_email");
+            _smtpPassword = Environment.GetEnvironmentVariable("test_password_email");
+            _senderEmail = Environment.GetEnvironmentVariable("test_email");
             _sender = string.Empty;
             _logger = loggerFactory.CreateLogger<MailService>();
             if (!File.Exists(ConfigurationMailFile))
