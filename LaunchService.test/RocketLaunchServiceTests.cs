@@ -41,7 +41,6 @@ namespace LaunchService.test
         public async Task FeatchAndStoreData_HandlesFailedResponse()
         {
             // Arrange
-            SetEnvVariable();
             var mockMessageHandler = GetMockMessageHandler(HttpStatusCode.NotFound, "response_empty.json");
             _httpClientMock = new HttpClient(mockMessageHandler.Object);
 

@@ -21,7 +21,6 @@ namespace LaunchService.Services
         private readonly int _smtpPort;
         private readonly string _smtpUser;
         private readonly string _smtpPassword;
-        private readonly string _sender;
         private readonly string _senderEmail;
         private readonly ILogger<MailService> _logger;
         public List<string> Recipients { get; set; } = new List<string>();
@@ -31,9 +30,8 @@ namespace LaunchService.Services
             _smtpServer = "smtp.gmail.com";
             _smtpPort = 587;
             _smtpUser = Environment.GetEnvironmentVariable("test_email");
-            _smtpPassword = Environment.GetEnvironmentVariable("test_password_email");
+            _smtpPassword = Environment.GetEnvironmentVariable("test_email_password");
             _senderEmail = Environment.GetEnvironmentVariable("test_email");
-            _sender = string.Empty;
             _logger = loggerFactory.CreateLogger<MailService>();
             if (!File.Exists(ConfigurationMailFile))
                 throw new FileNotFoundException($"Configuration mail file '{ConfigurationMailFile}' not found.");

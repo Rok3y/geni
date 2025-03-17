@@ -31,7 +31,14 @@ namespace LaunchService.Services
             _mailservice = mailservice;
             _logger = loggerFactory.CreateLogger<RocketLaunchService>();
 
-            _httpClient.BaseAddress = new Uri(Environment.GetEnvironmentVariable("BaseUrl"));
+            if (_httpClient.BaseAddress == null)
+            {
+                string baseUrl = Environment.GetEnvironmentVariable("BaseUrl");
+                if (!string.IsNullOrEmpty(baseUrl))
+                {
+                    _httpClient.BaseAddress = new Uri(baseUrl);
+                }
+            }
         }
 
         public async Task<List<Launch>> FetchLaunches(DateTime currentDate)
